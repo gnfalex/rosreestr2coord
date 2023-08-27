@@ -5,6 +5,9 @@ import copy
 import csv
 import json
 import os
+from pyproj import Proj, transform
+P3857 = Proj(init='EPSG:3857')
+P4326 = Proj(init='EPSG:4326')
 
 import xml.etree.cElementTree as ET
 
@@ -102,7 +105,7 @@ def coords2geojson(coords, geom_type, crs_name, attrs=None):
                             point = {
                                 "type": "Feature",
                                 "properties": {"hole": j > 0},
-                                "geometry": {"type": "Point", "coordinates": [x, y]},
+                                "geometry": {"type": "Point", "coordinates": transform(P3857, Proj(csr_name), x, y)},
                             }
                             features.append(point)
         elif geom_type.upper() == "POLYGON":
@@ -113,7 +116,9 @@ def coords2geojson(coords, geom_type, crs_name, attrs=None):
                     xy = coords[fry][j]
                     # close polygon
                     xy.append(xy[0])
-                    polygon.append(xy)
+#                    polygon.append(xy)
+                    xy2 = [transform(P3857, Proj(csr_name), x, y) for x,y in xy]
+                    polygon.append(xy2)
                 multi_polygon.append(polygon)
             feature = {
                 "type": "Feature",
@@ -126,7 +131,7 @@ def coords2geojson(coords, geom_type, crs_name, attrs=None):
     return False
 
 
-def coords2kml(coords, attrs):
+def coords2kml(coords, attrs, crs_name = "EPSG:4326"):
 
     if len(coords):
         kml = ET.Element("kml", attrib={"xmlns": "http://www.opengis.net/kml/2.2"})
@@ -157,9 +162,11 @@ def coords2kml(coords, attrs):
                     boundary = ET.SubElement(polygon, "outerBoundaryIs")
                 xy = coords[i][j]
                 xy.append(xy[0])
+                xy2 = [transform(P3857, Proj(crs_name), x, y) for x,y in xy]
+
                 linear_ring = ET.SubElement(boundary, "LinearRing")
                 ET.SubElement(linear_ring, "coordinates").text = " ".join(
-                    map(lambda c: ",".join(map(str, c)), xy)
+                    map(lambda c: ",".join(map(str, c)), xy2)
                 )
         # return ET.tostring(kml, encoding='utf8', method='xml')
         return ET.ElementTree(kml)
