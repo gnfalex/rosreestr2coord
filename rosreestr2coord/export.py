@@ -11,6 +11,20 @@ import xml.etree.cElementTree as ET
 from .utils import xy2lonlat
 from pyproj import CRS, Transformer
 
+def indentXML(elem, level=0):
+    #https://stackoverflow.com/a/4590052
+      i = "\n" + level*"  "
+      j = "\n" + (level-1)*"  "
+      if len(elem):
+          if not elem.text or not elem.text.strip(): elem.text = i + "  "
+          if not elem.tail or not elem.tail.strip(): elem.tail = i
+          for subelem in elem: indentXML(subelem, level+1)
+          if not elem.tail or not elem.tail.strip(): elem.tail = j
+      else:
+          if level and (not elem.tail or not elem.tail.strip()): elem.tail = j
+      return elem
+
+
 def make_output(output, file_name, file_format, out_path=""):
     out_path = out_path if out_path else file_format
     abspath = os.path.abspath(output)
@@ -87,6 +101,49 @@ def area_json_output(output, area, with_attrs=True):
         f.close()
     return geojson
 
+def area_kml_output(output, area, with_attrs=True):
+    kml = area.to_kml()
+    if kml:
+      kml.write(make_output(output, area.file_name, "kml"), encoding="UTF-8", xml_declaration=True)
+    return kml
+
+def area_dxf_output(output, area, with_attrs=True):
+    dxf = area.to_dxf()
+    if dxf:
+         dxf.saveas(make_output(output, area.file_name, "dxf"))
+    return dxf
+
+def batch_kml_output(output, kmls, file_name):
+    import copy
+    path = make_output(output, file_name, "kml")
+    kmlout = ET.Element("kml", attrib={"xmlns": "http://www.opengis.net/kml/2.2"})
+    doc = ET.SubElement(kmlout, "Document")
+    folder = ET.SubElement(doc, "Folder")
+    for kml in kmls:
+      for placemark in kml.findall(".//Placemark"):
+        folder.append(copy.deepcopy(placemark))
+    ET.ElementTree(kmlout).write(path, encoding="UTF-8", xml_declaration=True)
+    return path
+
+def batch_dxf_output(output, dxfs, file_name):
+    try:
+      import ezdxf
+      from ezdxf.addons import Importer
+    except:
+      return None
+    path = make_output(output, file_name, "dxf")
+    dxfout = ezdxf.new("R12")
+    msp = dxfout.modelspace()
+    for dxf in dxfs:
+      importer = Importer(dxf, dxfout)
+      print (dxf.blocks)
+      for block in list(dxf.blocks):
+        if not "_Space" in block.name:
+          importer.import_block(block.name)
+          msp.add_blockref(block.name,(0,0))
+      importer.finalize
+    dxfout.saveas(path)
+    return path
 
 def coords2geojson(coords, geom_type, crs_name_in="EPSG:3857", crs_name_out="EPSG:3857", attrs=None):
     if attrs is False:
@@ -135,19 +192,6 @@ def coords2geojson(coords, geom_type, crs_name_in="EPSG:3857", crs_name_out="EPS
 
 
 def coords2kml(coords, crs_name_in ="EPSG:3857", crs_name_out="EPSG:4326", attrs = None):
-    def indent(elem, level=0):
-    #https://stackoverflow.com/a/4590052
-      i = "\n" + level*"  "
-      j = "\n" + (level-1)*"  "
-      if len(elem):
-          if not elem.text or not elem.text.strip(): elem.text = i + "  "
-          if not elem.tail or not elem.tail.strip(): elem.tail = i
-          for subelem in elem: indent(subelem, level+1)
-          if not elem.tail or not elem.tail.strip(): elem.tail = j
-      else:
-          if level and (not elem.tail or not elem.tail.strip()): elem.tail = j
-      return elem
-
     if len(coords):
         kml = ET.Element("kml", attrib={"xmlns": "http://www.opengis.net/kml/2.2"})
         doc = ET.SubElement(kml, "Document")
@@ -184,7 +228,7 @@ def coords2kml(coords, crs_name_in ="EPSG:3857", crs_name_out="EPSG:4326", attrs
                     map(lambda c: ",".join(map(str, c)), xy)
                 )
         # return ET.tostring(kml, encoding='utf8', method='xml')
-        return ET.ElementTree(indent(kml))
+        return ET.ElementTree(indentXML(kml))
     return False
 
 def coords2dxf(coords,crs_name_in ="EPSG:3857", crs_name_out="EPSG:3857", attrs = None):

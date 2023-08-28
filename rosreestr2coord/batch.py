@@ -3,6 +3,7 @@ import sys
 from time import sleep
 
 from rosreestr2coord.export import area_json_output, batch_csv_output, batch_json_output
+from rosreestr2coord.export import area_kml_output, area_dxf_output, batch_kml_output, batch_dxf_output
 from rosreestr2coord.parser import Area
 from rosreestr2coord.utils import TimeoutException
 
@@ -19,6 +20,8 @@ def batch_parser(codes, with_log=False, file_name="example", areas=None,
     print("================================")
     need_sleep = 0
     features = []
+    kmls = []
+    dxfs = []
     for c in codes:
         area = None
         code = c.strip('\'\" \t\n\r')
@@ -48,6 +51,10 @@ def batch_parser(codes, with_log=False, file_name="example", areas=None,
         if area:
             areas.append(area)
             feature = area_json_output(output, area)
+            kml = area_kml_output(output, area)
+            if kml : kmls.append(kml)
+            dxf = area_dxf_output(output, area)
+            if dxf : dxfs.append(dxf)
             if feature:
                 features.append(feature)
             # area_csv_output(output, area)
@@ -72,7 +79,13 @@ def batch_parser(codes, with_log=False, file_name="example", areas=None,
             print("Create output for no_coord complete: %s" % path)
         if len(features):
             path = batch_json_output(output, areas, file_name)
-            print("Create output complete: %s" % path)
+            print("Create output GEOJSON complete: %s" % path)
+        if len(kmls):
+            path = batch_kml_output(output, kmls, file_name)
+            print("Create output KML complete: %s" % path)
+        if len(dxfs):
+            path = batch_dxf_output(output, dxfs, file_name)
+            print("Create output DXF complete: %s" % path)
         if len(with_error):
             print("-----------------")
             print("Error list:")
