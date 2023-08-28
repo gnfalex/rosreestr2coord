@@ -22,6 +22,8 @@ setup(
         "numpy",
         "Pillow",
         "opencv-contrib-python==4.5.3.56",
+        "pyproj",
+        "msvc-runtime",
     ],
     url="https://github.com/rendrom/rosreestr2coord",
     author="Artemiy Doroshkov",

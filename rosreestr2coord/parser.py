@@ -8,7 +8,6 @@ import string
 from .utils import (
     clear_code,
     code_to_filename,
-    xy2lonlat,
     make_request,
 )
 from .proxy_handling import ProxyHandling
@@ -273,8 +272,6 @@ class Area:
         if feature.get("center"):
             x = feature["center"]["x"]
             y = feature["center"]["y"]
-#            if self.coord_out == "EPSG:4326":
-#                (x, y) = xy2lonlat(x, y)
             self.center = {"x": x, "y": y}
             self.attrs["center"] = self.center
         return feature
@@ -425,8 +422,6 @@ class Area:
         for im_x, im_y in image_xy_corners:
             x = ex[0] + (im_x * dx)
             y = ex[3] - (im_y * dy)
-#            if self.coord_out == "EPSG:4326":
-#                (x, y) = xy2lonlat(x, y)
             xy_corners.append([x, y])
         return xy_corners
 

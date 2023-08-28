@@ -9,7 +9,7 @@ import os
 import xml.etree.cElementTree as ET
 
 from .utils import xy2lonlat
-
+from pyproj import CRS, Transformer
 
 def make_output(output, file_name, file_format, out_path=""):
     out_path = out_path if out_path else file_format
@@ -102,8 +102,7 @@ def coords2geojson(coords, geom_type, crs_name_in="EPSG:3857", crs_name_out="EPS
                     for j in range(len(coords[i])):
                         xy = coords[i][j]
                         if crs_name_out!=crs_name_in:
-                          if crs_name_out=="EPSG:4326":
-                            xy = [xy2lonlat(x, y) for x,y in xy]
+                          xy = list(Transformer.from_proj(CRS(crs_name_in), CRS(crs_name_out), always_xy=True).itransform(xy))
                         for x, y in xy:
                             point = {
                                 "type": "Feature",
@@ -120,8 +119,7 @@ def coords2geojson(coords, geom_type, crs_name_in="EPSG:3857", crs_name_out="EPS
                     # close polygon
                     xy.append(xy[0])
                     if crs_name_out != crs_name_in:
-                      if crs_name_out=="EPSG:4326":
-                        xy = [xy2lonlat(x, y) for x,y in xy]
+                      xy = list(Transformer.from_proj(CRS(crs_name_in), CRS(crs_name_out), always_xy=True).itransform(xy))
                     polygon.append(xy)
                 multi_polygon.append(polygon)
             feature = {
@@ -168,8 +166,7 @@ def coords2kml(coords, crs_name_in ="EPSG:3857", crs_name_out="EPSG:4326", attrs
                 xy = coords[i][j]
                 xy.append(xy[0])
                 if crs_name_out != crs_name_in:
-                  if crs_name_out=="EPSG:4326":
-                    xy = [xy2lonlat(x, y) for x,y in xy]
+                  xy = list(Transformer.from_proj(CRS(crs_name_in), CRS(crs_name_out), always_xy=True).itransform(xy))
                 linear_ring = ET.SubElement(boundary, "LinearRing")
                 ET.SubElement(linear_ring, "coordinates").text = " ".join(
                     map(lambda c: ",".join(map(str, c)), xy)
