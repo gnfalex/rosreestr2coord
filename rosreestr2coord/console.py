@@ -126,6 +126,35 @@ def getopts():
         required=False,
         help="show current version",
     )
+    parser.add_argument(
+        "--coord_in",
+        action="store",
+        type=str,
+        required=False,
+        help="Force input coord system",
+    )
+    parser.add_argument(
+        "--coord_out",
+        action="store",
+        type=str,
+        required=False,
+        help="Force output coord system",
+    )
+    parser.add_argument(
+        "--coord_outg",
+        action="store",
+        type=str,
+        required=False,
+        help="Force output coord system for GEOJSON",
+    )
+    parser.add_argument(
+        "--coord_outk",
+        action="store",
+        type=str,
+        required=False,
+        help="Force output coord system for KML",
+    )
+
     opts = parser.parse_args()
     return opts
 
@@ -141,7 +170,10 @@ def run_console(opt):
         "area_type": opt.area_type if opt.area_type else 1,
         "center_only": opt.center_only if opt.center_only else False,
         "use_cache": False if opt.refresh else True,
-        "coord_out": "EPSG:4326",
+        "coord_in": opt.coord_in if opt.coord_in else "EPSG:3857" ,
+        "coord_out": opt.coord_out if opt.coord_out else "EPSG:4326",
+        "coord_outg": opt.coord_outg if opt.coord_outg else "EPSG:3857",
+        "coord_outk": opt.coord_outk if opt.coord_outk else "EPSG:4326",
     }
 
     if opt.list:

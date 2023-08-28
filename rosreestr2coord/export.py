@@ -8,6 +8,8 @@ import os
 
 import xml.etree.cElementTree as ET
 
+from .utils import xy2lonlat
+
 
 def make_output(output, file_name, file_format, out_path=""):
     out_path = out_path if out_path else file_format
@@ -86,7 +88,7 @@ def area_json_output(output, area, with_attrs=True):
     return geojson
 
 
-def coords2geojson(coords, geom_type, crs_name, attrs=None):
+def coords2geojson(coords, geom_type, crs_name_in="EPSG:3857", crs_name_out="EPSG:3857", attrs=None):
     if attrs is False:
         attrs = {}
     if not "name" in attrs:
@@ -99,6 +101,9 @@ def coords2geojson(coords, geom_type, crs_name, attrs=None):
                 if coords[i]:
                     for j in range(len(coords[i])):
                         xy = coords[i][j]
+                        if crs_name_out!=crs_name_in:
+                          if crs_name_out=="EPSG:4326":
+                            xy = [xy2lonlat(x, y) for x,y in xy]
                         for x, y in xy:
                             point = {
                                 "type": "Feature",
@@ -114,6 +119,9 @@ def coords2geojson(coords, geom_type, crs_name, attrs=None):
                     xy = coords[fry][j]
                     # close polygon
                     xy.append(xy[0])
+                    if crs_name_out != crs_name_in:
+                      if crs_name_out=="EPSG:4326":
+                        xy = [xy2lonlat(x, y) for x,y in xy]
                     polygon.append(xy)
                 multi_polygon.append(polygon)
             feature = {
@@ -123,12 +131,12 @@ def coords2geojson(coords, geom_type, crs_name, attrs=None):
             }
             #feature_collection = feature
             features.append(feature)
-        feature_collection["crs"] = {"type": "name", "properties": {"name": crs_name}}
+        feature_collection["crs"] = {"type": "name", "properties": {"name": crs_name_out}}
         return feature_collection
     return False
 
 
-def coords2kml(coords, attrs):
+def coords2kml(coords, crs_name_in ="EPSG:3857", crs_name_out="EPSG:4326", attrs = None):
 
     if len(coords):
         kml = ET.Element("kml", attrib={"xmlns": "http://www.opengis.net/kml/2.2"})
@@ -159,6 +167,9 @@ def coords2kml(coords, attrs):
                     boundary = ET.SubElement(polygon, "outerBoundaryIs")
                 xy = coords[i][j]
                 xy.append(xy[0])
+                if crs_name_out != crs_name_in:
+                  if crs_name_out=="EPSG:4326":
+                    xy = [xy2lonlat(x, y) for x,y in xy]
                 linear_ring = ET.SubElement(boundary, "LinearRing")
                 ET.SubElement(linear_ring, "coordinates").text = " ".join(
                     map(lambda c: ",".join(map(str, c)), xy)

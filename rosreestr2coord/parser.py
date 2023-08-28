@@ -93,7 +93,10 @@ class Area:
         epsilon=5,
         media_path="",
         with_log=True,
-        coord_out="EPSG:4326",
+        coord_in=  "",
+        coord_out= "EPSG:4326",
+        coord_outg= "",
+        coord_outk= "",
         center_only=False,
         with_proxy=False,
         use_cache=True,
@@ -113,7 +116,10 @@ class Area:
         self.proxy_handler = proxy_handler
         self.logger = logger
         self.use_cache = use_cache
+        self.coord_in = coord_in
         self.coord_out = coord_out
+        self.coord_outg = coord_outg if coord_outg else coord_out
+        self.coord_outk = coord_outk if coord_outk else coord_out
         self.timeout = timeout
 
         t = string.Template(SEARCH_URL)
@@ -196,7 +202,7 @@ class Area:
             xy = self.xy
         if xy and len(xy):
             feature_collection = coords2geojson(
-                xy, geom_type, self.coord_out, attrs=attrs
+                xy, geom_type, self.coord_in, self.coord_outg, attrs=attrs
             )
             if feature_collection:
                 if dumps:
@@ -205,7 +211,7 @@ class Area:
         return False
 
     def to_kml(self):
-        return coords2kml(self.xy, self._prepare_attrs())
+        return coords2kml(self.xy, self.coord_in, self.coord_outk, self._prepare_attrs())
 
     def get_center_xy(self):
         center = self.attrs.get("center")
@@ -267,8 +273,8 @@ class Area:
         if feature.get("center"):
             x = feature["center"]["x"]
             y = feature["center"]["y"]
-            if self.coord_out == "EPSG:4326":
-                (x, y) = xy2lonlat(x, y)
+#            if self.coord_out == "EPSG:4326":
+#                (x, y) = xy2lonlat(x, y)
             self.center = {"x": x, "y": y}
             self.attrs["center"] = self.center
         return feature
@@ -326,7 +332,8 @@ class Area:
                 self.width = image.real_width
                 self.height = image.real_height
                 self.image_extent = image.image_extent
-
+                if image.crs and not self.coord_in:
+                  self.coord_in = f"EPSG:{image.crs}"
                 if image:
                     return self.get_image_geometry()
 
@@ -418,8 +425,8 @@ class Area:
         for im_x, im_y in image_xy_corners:
             x = ex[0] + (im_x * dx)
             y = ex[3] - (im_y * dy)
-            if self.coord_out == "EPSG:4326":
-                (x, y) = xy2lonlat(x, y)
+#            if self.coord_out == "EPSG:4326":
+#                (x, y) = xy2lonlat(x, y)
             xy_corners.append([x, y])
         return xy_corners
 

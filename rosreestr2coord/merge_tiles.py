@@ -545,6 +545,9 @@ class PkkAreaMerger(TileMerger, object):
             self.real_height = tile.height
             tile.close()
             bb = self.bbox
+            if ("spatialReference" in self._image_extent_list):
+              tmp_csr = self._image_extent_list["spatialReference"].get("latestWkid", 0)
+              if tmp_csr and (tmp_csr != self.crs): self.crs = tmp_crs
             xmax = max([x["xmax"] for x in self._image_extent_list])
             ymax = max([x["ymax"] for x in self._image_extent_list])
             self.image_extent = {
