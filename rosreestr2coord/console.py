@@ -154,6 +154,13 @@ def getopts():
         required=False,
         help="Force output coord system for KML",
     )
+    parser.add_argument(
+        "--coord_outd",
+        action="store",
+        type=str,
+        required=False,
+        help="Force output coord system for DXF",
+    )
 
     opts = parser.parse_args()
     return opts
@@ -174,6 +181,7 @@ def run_console(opt):
         "coord_out": opt.coord_out if opt.coord_out else "EPSG:4326",
         "coord_outg": opt.coord_outg if opt.coord_outg else "EPSG:3857",
         "coord_outk": opt.coord_outk if opt.coord_outk else "EPSG:4326",
+        "coord_outd": opt.coord_outd if opt.coord_outd else "EPSG:3857",
     }
 
     if opt.list:
@@ -198,6 +206,7 @@ def get_by_code(code, output, display, **kwargs):
     geojson = area.to_geojson_poly()
 
     kml = area.to_kml()
+    dxf = area.to_dxf()
     file_name = code_to_filename(area.file_name)
     if kml:
         filename = "%s.kml" % file_name
@@ -220,6 +229,14 @@ def get_by_code(code, output, display, **kwargs):
         f.write(geojson)
         f.close()
         print("geojson - {}".format(file_path))
+    if dxf:
+        filename = "%s.dxf" % file_name
+        dxf_path = os.path.join(abspath, "dxf")
+        if not os.path.isdir(dxf_path):
+            os.makedirs(dxf_path)
+        file_path = os.path.join(dxf_path, filename)
+        dxf.saveas(file_path)
+        print("dxf - {}".format(file_path))
     if display:
         area.show_plot()
     return area

@@ -12,7 +12,7 @@ from .utils import (
 )
 from .proxy_handling import ProxyHandling
 from .merge_tiles import PkkAreaMerger
-from .export import coords2geojson, coords2kml
+from .export import coords2geojson, coords2kml, coords2dxf
 from .logger import logger
 
 
@@ -96,6 +96,7 @@ class Area:
         coord_out= "EPSG:4326",
         coord_outg= "",
         coord_outk= "",
+        coord_outd= "",
         center_only=False,
         with_proxy=False,
         use_cache=True,
@@ -119,6 +120,7 @@ class Area:
         self.coord_out = coord_out
         self.coord_outg = coord_outg if coord_outg else coord_out
         self.coord_outk = coord_outk if coord_outk else coord_out
+        self.coord_outd = coord_outd if coord_outd else coord_out
         self.timeout = timeout
 
         t = string.Template(SEARCH_URL)
@@ -211,6 +213,11 @@ class Area:
 
     def to_kml(self):
         return coords2kml(self.xy, self.coord_in, self.coord_outk, self._prepare_attrs())
+
+    def to_dxf(self):
+        data = coords2dxf(self.xy, self.coord_in, self.coord_outd, self._prepare_attrs())
+        if not data: self.log("ezdxf not installed?")
+        return data
 
     def get_center_xy(self):
         center = self.attrs.get("center")

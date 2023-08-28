@@ -24,6 +24,7 @@ setup(
         "opencv-contrib-python==4.5.3.56",
         "pyproj",
         "msvc-runtime",
+        "ezdxf",
     ],
     url="https://github.com/rendrom/rosreestr2coord",
     author="Artemiy Doroshkov",

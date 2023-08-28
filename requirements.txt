@@ -4,3 +4,4 @@ Pillow==9.2.*
 matplotlib==3.5.2
 pyproj
 msvc-runtime
+ezdxf
