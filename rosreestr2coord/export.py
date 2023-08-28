@@ -89,7 +89,8 @@ def area_json_output(output, area, with_attrs=True):
 def coords2geojson(coords, geom_type, crs_name, attrs=None):
     if attrs is False:
         attrs = {}
-
+    if not "name" in attrs:
+      attrs["name"] = attrs["cn"] if "cn" in attrs else attrs.get("id")
     if len(coords):
         features = []
         feature_collection = {"type": "FeatureCollection", "features": features}
@@ -120,7 +121,8 @@ def coords2geojson(coords, geom_type, crs_name, attrs=None):
                 "properties": attrs,
                 "geometry": {"type": "MultiPolygon", "coordinates": multi_polygon},
             }
-            feature_collection = feature
+            #feature_collection = feature
+            features.append(feature)
         feature_collection["crs"] = {"type": "name", "properties": {"name": crs_name}}
         return feature_collection
     return False
@@ -133,9 +135,9 @@ def coords2kml(coords, attrs):
         doc = ET.SubElement(kml, "Document")
         folder = ET.SubElement(doc, "Folder")
         name = attrs["cn"] if "cn" in attrs else attrs["id"]
-        ET.SubElement(folder, "name").text = name
-        placemark = ET.SubElement(folder, "Placemark")
 
+        placemark = ET.SubElement(folder, "Placemark")
+        ET.SubElement(placemark, "name").text = name
         style = ET.SubElement(placemark, "Style")
 
         line_style = ET.SubElement(style, "LineStyle")
