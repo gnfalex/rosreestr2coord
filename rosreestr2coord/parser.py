@@ -426,6 +426,7 @@ class Area:
     def show_plot(self):
         """Development tool"""
         import cv2
+        import numpy
 
         try:
             from matplotlib import pyplot as plt
@@ -433,7 +434,12 @@ class Area:
             self.error("Matplotlib is not installed.")
             raise ImportError("matplotlib is not installed.")
 
-        img = cv2.imread(self.image_path)
+#        img = cv2.imread(self.image_path)
+        stream = open(self.image_path, "rb")
+        bytes = bytearray(stream.read())
+        numpyarray = numpy.asarray(bytes, dtype=numpy.uint8)
+        img = cv2.imdecode(numpyarray, cv2.IMREAD_UNCHANGED)
+
         for polygones in self.image_xy_corner:
             for corners in polygones:
                 for x, y in corners:
