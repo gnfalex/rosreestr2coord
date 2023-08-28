@@ -193,15 +193,18 @@ def coords2dxf(coords,crs_name_in ="EPSG:3857", crs_name_out="EPSG:3857", attrs 
   except:
     return False
   if len(coords):
-    doc = ezdxf.new("R2000")
+    doc = ezdxf.new("R12")
     msp = doc.modelspace()
+    name = attrs["cn"] if "cn" in attrs else attrs["id"]
+    name = name.replace(":","_")
+    blk = doc.blocks.new(name=name)
     for i in range(len(coords)):
       if coords[i]:
-        hatch = msp.add_hatch(color=2, dxfattribs={"hatch_style": ezdxf.const.HATCH_STYLE_NESTED})
         for j in range(len(coords[i])):
           xy = coords[i][j]
           if crs_name_out != crs_name_in:
             xy = list(Transformer.from_proj(CRS(crs_name_in), CRS(crs_name_out), always_xy=True).itransform(xy))
-          hatch.paths.add_polyline_path(xy, is_closed=True, flags=ezdxf.const.BOUNDARY_PATH_DEFAULT)
+          blk.add_polyline2d(xy,format="xy", close=True)
+    msp.add_blockref(name,(0,0))
     return doc
   return False
