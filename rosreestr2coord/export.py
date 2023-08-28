@@ -71,10 +71,10 @@ def batch_json_output(output, areas, file_name, with_attrs=True, crs_name="EPSG:
     for a in areas:
         feature = a.to_geojson_poly(with_attrs, dumps=False)
         if feature:
-            features.append(feature)
+            features+=feature["features"]
 
     f = open(path, "w", encoding="utf-8")
-    f.write(json.dumps(feature_collection))
+    f.write(json.dumps(feature_collection, indent=2))
     f.close()
     return path
 
@@ -135,6 +135,18 @@ def coords2geojson(coords, geom_type, crs_name_in="EPSG:3857", crs_name_out="EPS
 
 
 def coords2kml(coords, crs_name_in ="EPSG:3857", crs_name_out="EPSG:4326", attrs = None):
+    def indent(elem, level=0):
+    #https://stackoverflow.com/a/4590052
+      i = "\n" + level*"  "
+      j = "\n" + (level-1)*"  "
+      if len(elem):
+          if not elem.text or not elem.text.strip(): elem.text = i + "  "
+          if not elem.tail or not elem.tail.strip(): elem.tail = i
+          for subelem in elem: indent(subelem, level+1)
+          if not elem.tail or not elem.tail.strip(): elem.tail = j
+      else:
+          if level and (not elem.tail or not elem.tail.strip()): elem.tail = j
+      return elem
 
     if len(coords):
         kml = ET.Element("kml", attrib={"xmlns": "http://www.opengis.net/kml/2.2"})
@@ -172,5 +184,5 @@ def coords2kml(coords, crs_name_in ="EPSG:3857", crs_name_out="EPSG:4326", attrs
                     map(lambda c: ",".join(map(str, c)), xy)
                 )
         # return ET.tostring(kml, encoding='utf8', method='xml')
-        return ET.ElementTree(kml)
+        return ET.ElementTree(indent(kml))
     return False
