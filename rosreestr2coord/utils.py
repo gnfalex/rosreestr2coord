@@ -42,11 +42,15 @@ proxy_handling = ProxyHandling()
 
 
 def make_request(url, with_proxy=False, proxy_handler=None, logger=None, timeout=5):
+    tries = 10
+    error = ""
     if url:
         if with_proxy:
             proxy_handler = proxy_handler if proxy_handler else proxy_handling
             return make_request_with_proxy(url, proxy_handler, logger, timeout)
-        try:
+        for j in range(0, tries):
+          try:
+        
             headers = get_rosreestr_headers()
             request = Request(url, headers=headers)
             context = ssl._create_unverified_context()
@@ -56,8 +60,11 @@ def make_request(url, with_proxy=False, proxy_handler=None, logger=None, timeout
             if is_error:
                 raise Exception(is_error)
             return read
-        except Exception as er:
-            raise er
+          except Exception as er:                      
+            #raise er
+            logger.error(er)
+            error = er
+        raise error
     raise ValueError("The url is not set")
 
 
