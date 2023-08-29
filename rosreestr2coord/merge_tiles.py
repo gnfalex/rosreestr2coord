@@ -373,7 +373,7 @@ class PkkAreaMerger(TileMerger, object):
         x = int((xy["xMax"] - xy["xMin"]) / h)
         y = int((xy["yMax"] - xy["yMin"]) / h)
         max_value = max([x, y])
-        if max_value > 1000: max_value = 1000
+        if max_value > 1000: max_value=1000
         self.tile_size = [max_value, max_value]
         self.total = self.calc_total()
 
@@ -401,29 +401,66 @@ class PkkAreaMerger(TileMerger, object):
                 dx, dy = self.tile_size
             code = self.clear_code
 
+            url = self.url
+            params = {
+                "dpi": 96,
+                "transparent": "false",
+                "format": "png32",
+                "bbox": ",".join(map(str, self._get_bbox_by_xy(x, y))),
+                "bboxSR": 102100,
+                "imageSR": 102100,
+                "size": "%s,%s" % (dx, dy),
+                "f": "json",
+                "timestamp": int(round(time.time() * 1000)),
+            }
+
             layerDefs = ""
             # TODO: Understand how the layerDefs parameter works.
-            if self.area_type == 6:
-                layers = [0, 1, 2, 6]
-                layerDefs = (
-                    '{"0":"ID = \'%s\'","1":"objectid = -1","2":"objectid = -1","6":"objectid = -1"}'
-                    % code
-                )
-            # elif self.area_type == 7:
-            #     layers = [0, 1, 5, 2, 6, 3, 7, 4]
-
-            #     # This formatting does not work for area_type = 1
-            #     format_layer_defs = "{"
-            #     id_format = [
-            #         ('"%s":"' % layer) + ("ID = '%s'" % code) + '"'
-            #         for layer in sorted(layers)
-            #     ]
-            #     format_layer_defs += ",".join(id_format)
-            #     format_layer_defs += "}"
-            #     safe_string = urllib.parse.quote_plus(format_layer_defs)
-            #     layerDefs = safe_string.replace("+", "%20")
+         
+            if self.area_type in [1,2,3,4,5]:
+                llist = {
+                  1: {"ID = '%s'"%code: [6, 7, 8, 9]},
+                  2: {"objectid = -1":[11, 12], "ID = '%s'"%code:[10]},
+                  3: {"objectid = -1":[10, 12], "ID = '%s'"%code:[11]},
+                  4: {"objectid = -1":[10, 11], "ID = '%s'"%code:[12]},
+                  5: {"ID = '%s'"%code: [0, 1, 2, 3, 4, 5]},
+                }
+                layers = [l for k,v in llist[self.area_type].items() for l in v ]
+                layersDefs = json.dumps({l:k for k,v in llist[self.area_type].items() for l in v})
+                params.update({"layers": "show:{}".format(",".join([str(l) for l in layers])),"layerDefs": layersDefs})
+            elif self.area_type in [6,20,10,13]:
+                url = url.replace("CadastreSelected", "ZONESSelected")
+                llist = {
+                  6:{"objectid = -1":[0, 2, 6], "ID = '%s'"%code:[1]},
+                  10:{"objectid = -1":[1,2,6], "ID = '%s'"%code:[0]},
+                  13:{"objectid = -1":[4,5], "LINE_NUMBER = '%s'"%code:[0]},
+                  20:{"objectid = -1":[0, 1], "ID = '%s'"%code:[2,6]},
+                }
+                layers = [l for k,v in llist[self.area_type].items() for l in v ]
+                layersDefs = json.dumps({l:k for k,v in llist[self.area_type].items() for l in v})
+                params.update({"layers": "show:{}".format(",".join([str(l) for l in layers])),"layerDefs": layersDefs})
+            elif self.area_type in [7]:
+                url = url.replace("CadastreSelected", "BordersGKNSelected")
+                llist = {
+                  7:{"ID = '%s'"%code:[0,1,2,3,4,5,6,7]},
+                }
+                layers = [l for k,v in llist[self.area_type].items() for l in v ]
+                layersDefs = json.dumps({l:k for k,v in llist[self.area_type].items() for l in v})
+                params.update({"layers": "show:{}".format(",".join([str(l) for l in layers])),"layerDefs": layersDefs})
+            elif self.area_type in [27]:
+                url = url.replace("CadastreSelected", "BordersGKNSelected")
+                llist = {
+                  27:{"ID = '%s'"%code:[1]},
+                }
+                layers = [l for k,v in llist[self.area_type].items() for l in v ]
+                layersDefs = json.dumps({l:k for k,v in llist[self.area_type].items() for l in v})
+                params.update({"layers": "show:{}".format(",".join([str(l) for l in layers])),"layerDefs": layersDefs})
+            elif self.area_type in [25]:
+                url = url.replace("CadastreSelected", "PARCEL_BUILD")
+                dlayer = json.dumps([{"id":1,"source":{"mapLayerId":1,"type":"mapLayer"},"definitionExpression":"ID = '%s'"%code}])
+                params.update({"dynamicLayers":dlayer})
             else:
-                layers = list(map(str, range(0, 21)))
+                layers = list(map(str, range(0, 30)))
                 # layerDefs = {layer: str("ID = '{}'".format(code)) for layer in layers}
                 layerDefs = {}
                 for layer in layers:
@@ -432,28 +469,9 @@ class PkkAreaMerger(TileMerger, object):
                     if contour_num:
                         layerDef += " and contour_num = {}".format(contour_num[0])
                     layerDefs[layer] = layerDef
-
-            params = {
-                "dpi": 96,
-                "transparent": "false",
-                "format": "png32",
-                "layers": "show:{}".format(",".join([str(l) for l in layers])),
-                "bbox": ",".join(map(str, self._get_bbox_by_xy(x, y))),
-                "bboxSR": 102100,
-                "imageSR": 102100,
-                "size": "%s,%s" % (dx, dy),
-                "layerDefs": layerDefs,
-                "f": "json",
-                "timestamp": int(round(time.time() * 1000)),
-            }
+                
             if output_format:
                 params["format"] = output_format
-
-            url = self.url
-            if self.area_type == 6:
-                url = url.replace("CadastreSelected", "ZONESSelected")
-            elif self.area_type == 7:
-                url = url.replace("CadastreSelected", "BordersGKNSelected")
 
             meta_url = url + "?" + urllib.parse.urlencode(params)
             if meta_url:
