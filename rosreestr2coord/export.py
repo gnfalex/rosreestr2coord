@@ -136,7 +136,6 @@ def batch_dxf_output(output, dxfs, file_name):
     msp = dxfout.modelspace()
     for dxf in dxfs:
       importer = Importer(dxf, dxfout)
-      print (dxf.blocks)
       for block in list(dxf.blocks):
         if not "_Space" in block.name:
           importer.import_block(block.name)

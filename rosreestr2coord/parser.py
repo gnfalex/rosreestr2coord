@@ -105,12 +105,14 @@ class Area:
         logger=logger,
     ):
         self.with_log = with_log
-        self.area_type = area_type
         self.media_path = media_path
         self.center_only = center_only
         self.epsilon = epsilon
-        self.code = code
-
+        if "@" in code:
+          self.code, self.area_type = code.split("@")
+        else:
+          self.area_type = area_type
+          self.code = code
         self.file_name = code_to_filename(self.code[:])
         self.with_proxy = with_proxy
         self.proxy_handler = proxy_handler
