@@ -250,8 +250,9 @@ class Area:
             try:
                 with open(feature_info_path, "r") as data_file:
                     data = json.load(data_file)
-                self.log(f"Area info loaded from file: {feature_info_path}")
-                return data
+                if data["feature"]:
+                  self.log(f"Area info loaded from file: {feature_info_path}")
+                  return data
             except Exception:
                 pass
 
