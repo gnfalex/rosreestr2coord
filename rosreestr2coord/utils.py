@@ -4,7 +4,7 @@ import json
 import math
 import urllib.error
 import urllib.parse
-from urllib.request import Request, urlopen
+from urllib.request import Request, urlopen, quote, unquote
 
 from .proxy_handling import ProxyHandling
 
@@ -121,7 +121,7 @@ def is_error_response(url, response):
 
 
 def code_to_filename(code):
-    return code.replace(":", "_").replace("/", "-")
+    return unquote(code).replace(":", "_").replace("/", "-")
 
 
 def clear_code(code):
@@ -130,6 +130,7 @@ def clear_code(code):
     but if the cadastral number, for example "02:02-6.667",
     then the all parts will remain zeros
     """
+    code = quote(code, safe=":",encoding='utf-8')
     is_delimited_code = re.match(r"^\d+(\:\d+)", code)
     leave_zeros = "." in code
     if is_delimited_code and not leave_zeros:

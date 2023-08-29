@@ -399,7 +399,6 @@ class PkkAreaMerger(TileMerger, object):
             else:
                 dx, dy = self.tile_size
             code = self.clear_code
-
             url = self.url
             params = {
                 "dpi": 96,
@@ -432,7 +431,7 @@ class PkkAreaMerger(TileMerger, object):
                 llist = {
                   6:{"objectid = -1":[0, 2, 6], "ID = '%s'"%code:[1]},
                   10:{"objectid = -1":[1,2,6], "ID = '%s'"%code:[0]},
-                  13:{"objectid = -1":[4,5], "LINE_NUMBER = '%s'"%code:[0]},
+                  13:{"objectid = -1":[4,5], "LINE_NUMBER = '%s'"%code:[3]},
                   20:{"objectid = -1":[0, 1], "ID = '%s'"%code:[2,6]},
                 }
                 layers = [l for k,v in llist[self.area_type].items() for l in v ]
@@ -447,12 +446,14 @@ class PkkAreaMerger(TileMerger, object):
                 layersDefs = json.dumps({l:k for k,v in llist[self.area_type].items() for l in v})
                 params.update({"layers": "show:{}".format(",".join([str(l) for l in layers])),"layerDefs": layersDefs})
             elif self.area_type in [27]:
-                url = url.replace("CadastreSelected", "BordersGKNSelected")
+                url = url.replace("CadastreSelected", "PARCEL_TOURISM")
                 llist = {
                   27:{"ID = '%s'"%code:[1]},
                 }
                 layers = [l for k,v in llist[self.area_type].items() for l in v ]
                 layersDefs = json.dumps({l:k for k,v in llist[self.area_type].items() for l in v})
+                params.update({"bbox": ",".join(map(str, [int(x) for x in self._get_bbox_by_xy(x, y)]))})
+                params.update({"timestamp": int(round(time.time() * 100))})
                 params.update({"layers": "show:{}".format(",".join([str(l) for l in layers])),"layerDefs": layersDefs})
             elif self.area_type in [25]:
                 url = url.replace("CadastreSelected", "PARCEL_BUILD")
@@ -471,8 +472,7 @@ class PkkAreaMerger(TileMerger, object):
                 
             if output_format:
                 params["format"] = output_format
-
-            meta_url = url + "?" + urllib.parse.urlencode(params)
+            meta_url = url + "?" + urllib.parse.urlencode(params, safe="%", encoding="utf-8", quote_via=urllib.parse.quote)
             if meta_url:
                 data = False
                 cache_path = os.path.join(self.tile_dir, "{}_{}.json".format(x, y))
