@@ -241,7 +241,7 @@ class TileMerger:
                 self.tile_format,
             )
             out = Image.new(
-                "RGB",
+                "L",
                 (
                     (xy_range["xMax"] + 1 - xy_range["xMin"]) * self.image_size[0],
                     (xy_range["yMax"] + 1 - xy_range["yMin"]) * self.image_size[1],
@@ -373,7 +373,6 @@ class PkkAreaMerger(TileMerger, object):
         x = int((xy["xMax"] - xy["xMin"]) / h)
         y = int((xy["yMax"] - xy["yMin"]) / h)
         max_value = max([x, y])
-        if max_value > 1000: max_value=1000
         self.tile_size = [max_value, max_value]
         self.total = self.calc_total()
 
