@@ -402,7 +402,7 @@ class PkkAreaMerger(TileMerger, object):
 
             layerDefs = ""
             # TODO: Understand how the layerDefs parameter works.
-            if self.area_type == 10:
+            if self.area_type == 6:
                 layers = [0, 1, 2, 6]
                 layerDefs = (
                     '{"0":"ID = \'%s\'","1":"objectid = -1","2":"objectid = -1","6":"objectid = -1"}'
@@ -449,7 +449,7 @@ class PkkAreaMerger(TileMerger, object):
                 params["format"] = output_format
 
             url = self.url
-            if self.area_type == 10:
+            if self.area_type == 6:
                 url = url.replace("CadastreSelected", "ZONESSelected")
             elif self.area_type == 7:
                 url = url.replace("CadastreSelected", "BordersGKNSelected")

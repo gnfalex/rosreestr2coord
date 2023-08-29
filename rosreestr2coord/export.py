@@ -236,7 +236,7 @@ def coords2dxf(coords,crs_name_in ="EPSG:3857", crs_name_out="EPSG:3857", attrs 
   except:
     return False
   if len(coords):
-    doc = ezdxf.new("R12")
+    doc = ezdxf.new("R2000")
     msp = doc.modelspace()
     name = attrs["cn"] if "cn" in attrs else attrs["id"]
     name = name.replace(":","_")
