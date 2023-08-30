@@ -426,12 +426,13 @@ class PkkAreaMerger(TileMerger, object):
                 layers = [l for k,v in llist[self.area_type].items() for l in v ]
                 layersDefs = json.dumps({l:k for k,v in llist[self.area_type].items() for l in v})
                 params.update({"layers": "show:{}".format(",".join([str(l) for l in layers])),"layerDefs": layersDefs})
-            elif self.area_type in [6,20,10,13]:
+            elif self.area_type in [6,20,10,13,15]:
                 url = url.replace("CadastreSelected", "ZONESSelected")
                 llist = {
                   6:{"objectid = -1":[0, 2, 6], "ID = '%s'"%code:[1]},
                   10:{"objectid = -1":[1,2,6], "ID = '%s'"%code:[0]},
                   13:{"objectid = -1":[4,5], "LINE_NUMBER = '%s'"%code:[3]},
+                  15:{"objectid = -1":[3,5], "ID = '%s'"%code:[4]},
                   20:{"objectid = -1":[0, 1], "ID = '%s'"%code:[2,6]},
                 }
                 layers = [l for k,v in llist[self.area_type].items() for l in v ]
@@ -473,6 +474,7 @@ class PkkAreaMerger(TileMerger, object):
             if output_format:
                 params["format"] = output_format
             meta_url = url + "?" + urllib.parse.urlencode(params, safe="%", encoding="utf-8", quote_via=urllib.parse.quote)
+            self.logger.debug(meta_url)
             if meta_url:
                 data = False
                 cache_path = os.path.join(self.tile_dir, "{}_{}.json".format(x, y))

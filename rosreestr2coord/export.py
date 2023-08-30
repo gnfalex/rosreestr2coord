@@ -238,7 +238,7 @@ def coords2dxf(coords,crs_name_in ="EPSG:3857", crs_name_out="EPSG:3857", attrs 
   if len(coords):
     doc = ezdxf.new("R2000")
     msp = doc.modelspace()
-    name = attrs["cn"] if "cn" in attrs else attrs["id"]
+    name = attrs["cn"] if attrs.get("cn") else attrs["id"]
     name = name.replace(":","_")
     blk = doc.blocks.new(name=name)
     for i in range(len(coords)):
