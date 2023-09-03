@@ -213,7 +213,7 @@ class Area:
             )
             if feature_collection:
                 if dumps:
-                    return json.dumps(feature_collection, indent = 2)
+                    return json.dumps(feature_collection, indent = 2, ensure_ascii=False)
                 return feature_collection
         return False
 

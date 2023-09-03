@@ -25,6 +25,7 @@ setup(
         "pyproj",
         "msvc-runtime",
         "ezdxf",
+        "pyyaml",
     ],
     url="https://github.com/rendrom/rosreestr2coord",
     author="Artemiy Doroshkov",
