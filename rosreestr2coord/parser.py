@@ -12,7 +12,7 @@ from .utils import (
 )
 from .proxy_handling import ProxyHandling
 from .merge_tiles import PkkAreaMerger
-from .export import coords2geojson, coords2kml, coords2dxf
+from .export import coords2geojson, coords2kml, coords2dxf, feat2csv
 from .logger import logger
 
 
@@ -224,6 +224,9 @@ class Area:
         data = coords2dxf(self.xy, self.coord_in, self.coord_outd, self._prepare_attrs())
         if not data: self.log("ezdxf not installed?")
         return data
+
+    def to_featcsv(self, output):
+        data = feat2csv (output, self)
 
     def get_center_xy(self):
         center = self.attrs.get("center")

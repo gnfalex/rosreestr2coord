@@ -3,7 +3,7 @@ import sys
 from time import sleep
 
 from rosreestr2coord.export import area_json_output, batch_csv_output, batch_json_output
-from rosreestr2coord.export import area_kml_output, area_dxf_output, batch_kml_output, batch_dxf_output
+from rosreestr2coord.export import area_kml_output, area_dxf_output, batch_kml_output, batch_dxf_output, feat2csv
 from rosreestr2coord.parser import Area
 from rosreestr2coord.utils import TimeoutException
 
@@ -58,7 +58,7 @@ def batch_parser(codes, with_log=False, file_name="example", areas=None,
             if feature:
                 features.append(feature)
             # area_csv_output(output, area)
-
+        feat2csv(output, areas=areas)
     print("=================")
     print("Parsing complete:")
     print("  success     : %i" % success)

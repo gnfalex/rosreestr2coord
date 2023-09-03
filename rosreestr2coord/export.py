@@ -5,6 +5,7 @@ import copy
 import csv
 import json
 import os
+import yaml
 
 import xml.etree.cElementTree as ET
 
@@ -58,6 +59,62 @@ def _write_csv_row(f, area, header=False):
         f.writerow([x["value"] for x in cols])
     except Exception as er:
         print(er)
+
+def feat2csv(output, area=None, areas=None):
+    path = make_output(output, "data", "csv")
+    pkk6data = {}
+    try:
+      yamldata = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.yaml")
+      import yaml
+      with open(yamldata, 'r', encoding='utf-8') as f:
+        pkk6data = yaml.load(f.read(),Loader=yaml.Loader)
+      print ("yaml loaded", yamldata)
+    except:
+      pkk6data = {}
+
+    datalist = []
+    datadict = dict.fromkeys(["id"])
+    if os.path.exists(path):
+      with open(path, "r", encoding="cp1251", newline='') as csvfile:
+        reader = csv.DictReader(csvfile,dialect='excel', delimiter=';')
+        for row in reader:
+          if not row.get("id")=="ID":
+            datalist.append(row)
+    if not areas:
+      areas=[area]
+    if pkk6data:
+      for areaz in areas:
+        tmpdict = {}
+        for key,val in areaz.get_attrs().items():
+          try:
+            tmpdict[key]=pkk6data["abbrs"][key]["values"][val]
+          except:
+            tmpdict[key]=val
+        datalist.append({key:val for key,val in tmpdict.items() if (type(val)!=type(dict()) and type(val)!=type(dict()))})
+    else:
+      for areaz in areas:
+        tmpdict = areaz.get_attrs().items()
+        datalist.append({key:val for key,val in tmpdict.items() if (type(val)!=type(dict()) and type(val)!=type(dict()))})
+
+    for data in datalist:
+      for key in data:
+        if not key in datadict: datadict[key]=1
+   
+    with open(path, "w", encoding="cp1251", newline='') as csvfile:
+      writer = csv.DictWriter(csvfile, fieldnames=datadict,dialect='excel',delimiter=';')
+      writer.writeheader()
+      if pkk6data:
+        tmpdict = {"id":"ID"}
+        for key in datadict:
+          if not key in tmpdict:
+            try:
+              tmpdict[key] = pkk6data["abbrs"][key]["names"][0]
+            except:
+              pass
+        writer.writerow(tmpdict)
+      for data in datalist:
+        writer.writerow(data)
+
 
 
 def area_csv_output(output, area):

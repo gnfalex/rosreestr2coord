@@ -10,6 +10,7 @@ from rosreestr2coord.utils import code_to_filename
 from rosreestr2coord.version import VERSION
 
 
+
 def getopts():
     import argparse
     import textwrap
@@ -237,6 +238,7 @@ def get_by_code(code, output, display, **kwargs):
         file_path = os.path.join(dxf_path, filename)
         dxf.saveas(file_path)
         print("dxf - {}".format(file_path))
+    area.to_featcsv(output)
     if display:
         area.show_plot()
     return area
