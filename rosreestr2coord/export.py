@@ -240,7 +240,6 @@ def coords2geojson(coords, geom_type, crs_name_in="EPSG:3857", crs_name_out="EPS
                 "properties": attrs,
                 "geometry": {"type": "MultiPolygon", "coordinates": multi_polygon},
             }
-            #feature_collection = feature
             features.append(feature)
         feature_collection["crs"] = {"type": "name", "properties": {"name": crs_name_out}}
         return feature_collection
@@ -283,7 +282,6 @@ def coords2kml(coords, crs_name_in ="EPSG:3857", crs_name_out="EPSG:4326", attrs
                 ET.SubElement(linear_ring, "coordinates").text = " ".join(
                     map(lambda c: ",".join(map(str, c)), xy)
                 )
-        # return ET.tostring(kml, encoding='utf8', method='xml')
         return ET.ElementTree(indentXML(kml))
     return False
 
@@ -305,6 +303,6 @@ def coords2dxf(coords,crs_name_in ="EPSG:3857", crs_name_out="EPSG:3857", attrs 
           if crs_name_out != crs_name_in:
             xy = list(Transformer.from_proj(CRS(crs_name_in), CRS(crs_name_out), always_xy=True).itransform(xy))
           blk.add_polyline2d(xy,format="xy", close=True)
-    msp.add_blockref(name,(0,0))
+    msp.add_blockref(name,(0,0)).add_attrib("CN", name).is_invisible=True
     return doc
   return False

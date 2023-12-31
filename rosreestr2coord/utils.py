@@ -5,6 +5,7 @@ import math
 import urllib.error
 import urllib.parse
 from urllib.request import Request, urlopen, quote, unquote
+import time
 
 from .proxy_handling import ProxyHandling
 
@@ -61,9 +62,9 @@ def make_request(url, with_proxy=False, proxy_handler=None, logger=None, timeout
                 raise Exception(is_error)
             return read
           except Exception as er:                      
-            #raise er
             logger.error(er)
             error = er
+            time.sleep(2)
         raise error
     raise ValueError("The url is not set")
 
