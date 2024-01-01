@@ -1,6 +1,4 @@
 # coding: utf-8
-
-
 import copy
 import csv
 import json
@@ -68,7 +66,6 @@ def feat2csv(output, area=None, areas=None):
       import yaml
       with open(yamldata, 'r', encoding='utf-8') as f:
         pkk6data = yaml.load(f.read(),Loader=yaml.Loader)
-      print ("yaml loaded", yamldata)
     except:
       pkk6data = {}
 
@@ -266,7 +263,6 @@ def coords2kml(coords, crs_name_in ="EPSG:3857", crs_name_out="EPSG:4326", attrs
         multi_geometry = ET.SubElement(placemark, "MultiGeometry")
 
         for i in range(len(coords)):
-
             polygon = ET.SubElement(multi_geometry, "Polygon")
             for j in range(len(coords[i])):
                 if j:
@@ -279,9 +275,7 @@ def coords2kml(coords, crs_name_in ="EPSG:3857", crs_name_out="EPSG:4326", attrs
                 if crs_name_out != crs_name_in:
                   xy = list(Transformer.from_proj(CRS(crs_name_in), CRS(crs_name_out), always_xy=True).itransform(xy))
                 linear_ring = ET.SubElement(boundary, "LinearRing")
-                ET.SubElement(linear_ring, "coordinates").text = " ".join(
-                    map(lambda c: ",".join(map(str, c)), xy)
-                )
+                ET.SubElement(linear_ring, "coordinates").text = " ".join(map(lambda c: ",".join(map(str, c)), xy))
         return ET.ElementTree(indentXML(kml))
     return False
 

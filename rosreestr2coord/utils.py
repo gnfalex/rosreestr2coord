@@ -1,7 +1,7 @@
-import re
-import ssl
 import json
 import math
+import re
+import ssl
 import urllib.error
 import urllib.parse
 from urllib.request import Request, urlopen, quote, unquote
@@ -42,16 +42,14 @@ def get_rosreestr_headers():
 proxy_handling = ProxyHandling()
 
 
-def make_request(url, with_proxy=False, proxy_handler=None, logger=None, timeout=5):
-    tries = 10
-    error = ""
+def make_request(url, with_proxy=False, proxy_handler=None, logger=None, timeout=5, proxy_url=None):
     if url:
-        if with_proxy:
+        if proxy_url is not None:
+            return make_request_with_specified_proxy(url, proxy_url, logger)
+        elif with_proxy:
             proxy_handler = proxy_handler if proxy_handler else proxy_handling
             return make_request_with_proxy(url, proxy_handler, logger, timeout)
-        for j in range(0, tries):
-          try:
-        
+        try:
             headers = get_rosreestr_headers()
             request = Request(url, headers=headers)
             context = ssl._create_unverified_context()
@@ -61,12 +59,20 @@ def make_request(url, with_proxy=False, proxy_handler=None, logger=None, timeout
             if is_error:
                 raise Exception(is_error)
             return read
-          except Exception as er:                      
-            logger.error(er)
-            error = er
-            time.sleep(2)
-        raise error
+        except Exception as er:
+            raise er
     raise ValueError("The url is not set")
+
+
+def make_request_with_specified_proxy(url, proxy_url, logger):
+    attempts = 3
+    for i in range(1, attempts + 1):
+        try:
+            ssl._create_default_https_context = ssl._create_unverified_context
+            opener = urllib.request.build_opener(urllib.request.ProxyHandler({"http": proxy_url, "https": proxy_url}))
+            return opener.open(url).read()
+        except:
+            logger.debug("Attempt failed, retry")
 
 
 def make_request_with_proxy(url, url_proxy, logger, timeout):
