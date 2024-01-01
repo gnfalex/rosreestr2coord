@@ -25,6 +25,8 @@ def batch_parser(
     for c in codes:
         area = None
         code = c.strip("'\" \t\n\r")
+        if "@" in code:
+          code,kwargs["area_type"] = code.split("@")
         print("{}".format(code), end="")
         try:
             sleep(need_sleep)

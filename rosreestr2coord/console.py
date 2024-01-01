@@ -42,6 +42,7 @@ def getopts():
     parser.add_argument("--coord_outg", action="store", type=str, required=False, help="Force output coord system for GEOJSON",)
     parser.add_argument("--coord_outk", action="store", type=str, required=False, help="Force output coord system for KML")
     parser.add_argument("--coord_outd", action="store", type=str, required=False, help="Force output coord system for DXF",)
+    parser.add_argument("-s", "--search", action="store", type=str, required=False, help="Search parcels from GeoJSON figure",)
     return parser.parse_args()
 
 
@@ -111,6 +112,10 @@ def run_console(opt):
 
     if opt.list:
         handle_batch_processing(opt.list, opt.output, opt.delay, kwargs)
+    elif opt.search:
+        from rosreestr2coord.search import searchFromGEOJSON
+        for list in searchFromGEOJSON(opt.search):
+          handle_batch_processing(list, os.path.join(os.getcwd(),os.path.splitext(list)[0]), opt.delay, kwargs) 
     elif opt.code:
         get_by_code(opt.code, opt.output, opt.display, **kwargs)
 
