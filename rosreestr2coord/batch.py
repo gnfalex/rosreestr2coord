@@ -27,6 +27,7 @@ def batch_parser(
         code = c.strip("'\" \t\n\r")
         if "@" in code:
           code,kwargs["area_type"] = code.split("@")
+          kwargs["area_type"]=int(kwargs["area_type"])
         print("{}".format(code), end="")
         try:
             sleep(need_sleep)
@@ -59,7 +60,7 @@ def batch_parser(
             if feature:
                 features.append(feature)
             # area_csv_output(output, area)
-        feat2csv(output, areas=areas)
+    feat2csv(output, areas=areas)
     print("=================")
     print("Parsing complete:")
     print("  success     : %i" % success)

@@ -17,6 +17,14 @@ from rosreestr2coord.utils import TimeoutException, code_to_filename, make_reque
 Image.MAX_IMAGE_PIXELS = 1000000000
 Image.warnings.simplefilter("error", Image.DecompressionBombWarning)
 
+pkk6data = None
+try:
+  yamldata = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.yaml")
+  import yaml
+  with open(yamldata, 'r', encoding='utf-8') as f:
+    pkk6data = yaml.load(f.read(),Loader=yaml.Loader)
+except:
+  pass
 
 def chunks(m, n):
     """Yield successive n-sized chunks from m."""
@@ -389,20 +397,12 @@ class PkkAreaMerger(TileMerger, object):
 
             layerDefs = ""
             # TODO: Understand how the layerDefs parameter works.
-            pkk6data = None
-            try:
-              yamldata = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.yaml")
-              import yaml
-              with open(yamldata, 'r', encoding='utf-8') as f:
-                pkk6data = yaml.load(f.read(),Loader=yaml.Loader)
+            if pkk6data:
               areadata = pkk6data["layers"][self.area_type]
               layers = list(set([x for x in areadata["sublayersTemplate"]] +
                                 [x for x in areadata["selectIds"]]))
               layersDefs = {key:f"{val}{key}" for key,val  in areadata["sublayersTemplate"].items()}.update(
                            {key:f"{areadata['selectTemplate']}{key}" for key in areadata["selectIds"]})
-            except:
-              pkk6data = None
-            if pkk6data:
               params.update({"layers": "show:{}".format(",".join([str(l) for l in layers])),"layerDefs": layersDefs})
             elif self.area_type in [1,2,3,4,5]:
                 llist = {

@@ -10,6 +10,16 @@ import xml.etree.cElementTree as ET
 from .utils import xy2lonlat
 from pyproj import CRS, Transformer
 
+pkk6data = {}
+try:
+  yamldata = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.yaml")
+  import yaml
+  with open(yamldata, 'r', encoding='utf-8') as f:
+    pkk6data = yaml.load(f.read(),Loader=yaml.Loader)
+except:
+  pkk6data = {}
+
+
 def indentXML(elem, level=0):
     #https://stackoverflow.com/a/4590052
       i = "\n" + level*"  "
@@ -60,14 +70,6 @@ def _write_csv_row(f, area, header=False):
 
 def feat2csv(output, area=None, areas=None):
     path = make_output(output, "data", "csv")
-    pkk6data = {}
-    try:
-      yamldata = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.yaml")
-      import yaml
-      with open(yamldata, 'r', encoding='utf-8') as f:
-        pkk6data = yaml.load(f.read(),Loader=yaml.Loader)
-    except:
-      pkk6data = {}
 
     datalist = []
     datadict = dict.fromkeys(["id"])
@@ -75,7 +77,7 @@ def feat2csv(output, area=None, areas=None):
       with open(path, "r", encoding="cp1251", newline='') as csvfile:
         reader = csv.DictReader(csvfile,dialect='excel', delimiter=';')
         for row in reader:
-          if not row.get("id")=="ID":
+          if row.get("id") and not row.get("id")=="ID":
             datalist.append(row)
     if not areas:
       areas=[area]
@@ -110,7 +112,7 @@ def feat2csv(output, area=None, areas=None):
               pass
         writer.writerow(tmpdict)
       for data in datalist:
-        writer.writerow(data)
+        if data.get("id"): writer.writerow(data)
 
 
 
