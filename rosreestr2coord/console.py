@@ -114,8 +114,7 @@ def run_console(opt):
         handle_batch_processing(opt.list, opt.output, opt.delay, kwargs)
     elif opt.search:
         from rosreestr2coord.search import searchFromGEOJSON
-        for list in searchFromGEOJSON(opt.search):
-          handle_batch_processing(list, opt.output, opt.delay, kwargs)
+        handle_batch_processing(searchFromGEOJSON(opt.search), opt.output, opt.delay, kwargs)
     elif opt.code:
         get_by_code(opt.code, opt.output, opt.display, **kwargs)
 

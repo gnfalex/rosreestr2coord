@@ -15,7 +15,7 @@ def searchFromGEOJSON(gjpath):
   CRS1=CRS("EPSG:4326")
   CRS2=CRS("EPSG:3857")
   sleepTime=30
-  outlist = []
+  outset = set()
   try:
     yamldata = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.yaml")
     import yaml
@@ -37,11 +37,12 @@ def searchFromGEOJSON(gjpath):
     outfname = f"{ptype:>02}_{pkk6data[ptype]}_{md5.hexdigest()}.txt"
     if os.path.exists(outfname):
       print (outfname, " already exist. Skipped")
-      outlist.append(outfname)
+      with open(outfname, "r") as f:
+        outset.update(f.read().split('\n'))
       continue
     skip = 0
     tstamp = int(datetime.timestamp(datetime.now())*1000)
-    cnList=[]
+    cnList = set()
     while True:
       print ("Downloading:",ptype,"_", skip, end = " ")
       fls = {
@@ -68,7 +69,7 @@ def searchFromGEOJSON(gjpath):
           print (f"OK. Next try after {sleepTime}")
           data = req.json()
           for feat in data.get("features",[]):
-            cnList.append(f'{feat.get("attrs",{}).get("id",None)}@{ptype}')
+            cnList.add([f'{feat.get("attrs",{}).get("id",None)}@{ptype}')
           if data.get("total_relation")=="gte":
             skip+=40
             time.sleep(sleepTime)
@@ -83,6 +84,8 @@ def searchFromGEOJSON(gjpath):
         with open(outfname,"w") as f:
           f.write("\n".join(cnList))
         print (outfname, " completed")
-        outlist.append(outfname)
+        outlist.update(cnList)
       break
-  return outlist
+  with open(f"{md5.hexdigest()}.txt", "w") as f:
+    f.write('\n'.join(outset))
+  return f"{md5.hexdigest()}.txt"

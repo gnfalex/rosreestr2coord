@@ -53,6 +53,10 @@ def batch_parser(
         if area:
             areas.append(area)
             feature = area_json_output(output, area)
+            if "kvartal" in area.get_attrs():
+              kvartal = f'{area.get_attrs()["kvartal"]}@2'
+              if not kvartal in codes:
+                codes.append(kvartal)
             kml = area_kml_output(output, area)
             if kml : kmls.append(kml)
             dxf = area_dxf_output(output, area)
